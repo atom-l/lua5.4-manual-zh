@@ -42,7 +42,7 @@ Lua可以同时调用由Lua或C编写（参见[3.4.10](#3410---函数调用)）�
 
 表是Lua中唯一的组织数据结构的机制，它可以用于表示一般数组、列表、符号表、集合、记录、图、树……等等。对于表示记录，Lua使用属性名来作为索引。语言支持用 a.name 来替代表示 a["name"] 的语法糖。同时也有些创建表的方法（参见[3.4.9](#349---表的构造)）。
 
-和索引一样，表的值也可以是任意类型。特别是*function*，因其也是*一等公民（first-class）* 的值，所以也可以被表包含。因此表同样可以保管*函数*（参见[3.4.11](#3411---函数定义)）。
+和索引一样，表的值也可以是任意类型。尤其是*function*，因其也是*一等公民（first-class）* 的值，所以也可以被表包含。因此表同样可以保管*函数*（参见[3.4.11](#3411---函数定义)）。
 
 表、函数、线程、以及（full）userdata都是对象，因此变量其实并不是 *包含（contain）* 它们的值，而只是 *引用（reference）* 了它们。赋值、传递参数和函数返回都是在操作这些值的引用，这些操作不涉及任何复制。
 
@@ -52,7 +52,7 @@ Lua可以同时调用由Lua或C编写（参见[3.4.10](#3410---函数调用)）�
 ## 2.2 - 环境和全局环境
 正如我们将在[3.2](#32---变量)和[3.3.3](#333---赋值)所述，对一个自由名称（即一个未绑定任何声明的名称）的任意引用“var”都会在句法上被转换为“_ENV.var”。此外，每个代码块都被编译在有着一个名为_ENV的外部局部变量的空间中（参见[3.3.2](#332---代码块chunks)），所以_ENV本身在块中从来都不是一个自由名称。
 
-尽管有外部变量_ENV以及自由名称的转换，但是_ENV完全是个合规名称。特别是你可以给这个名称定义一个新变量和参数。程序中每个自由名称的引用都对于_ENV的点可见，符合Lua的可见性规则（参见[3.5](#35---可见性规则)）。
+尽管有外部变量_ENV以及自由名称的转换，但是_ENV完全是个合规名称。所以你可以给这个名称定义一个新变量和参数。程序中每个自由名称的引用都对于_ENV的点可见，符合Lua的可见性规则（参见[3.5](#35---可见性规则)）。
 
 任何作为_ENV值的表都称为*环境（environment）*。
 
@@ -167,9 +167,9 @@ Lua中的垃圾收集器（GC）有两种工作模式：步进模式和代际模
 
 一个弱表可以同时或任一拥有弱键和弱值。拥有弱值的表允许收集其值，但是会阻止收集其键。一个同时拥有弱值和弱键的表的键和值都允许收集。任意情况下，当键或值被收集，其键值对都会从表中移除。表的“弱性”由元表中的__mode属性来控制。此元值如果存在，则必须为给出的字符串之一："k"——表示拥有弱键的表，"v"表示拥有弱值的表，"kv"表示同时拥有弱键和弱值的表。
 
-拥有弱键和强值的表也被称为*临时表（ephemeron table）*。在临时表中，键可达是值可达的前提。特别是某个键只被其值引用时，这个键值对将被删除。
+拥有弱键和强值的表也被称为*临时表（ephemeron table）*。在临时表中，键可达是值可达的前提。具体来说，某个键只被其值引用时，这个键值对将被删除。
 
-任何对表的“弱性”做的修改都会在下一次GC周期生效。特别是当你将“弱性”改成一个更强的模式时，Lua仍然会在改动生效之前回收一些东西。
+任何对表的“弱性”做的修改都会在下一次GC周期生效。比如，当你将“弱性”改成一个更强的模式时，Lua仍然会在改动生效之前回收一些东西。
 
 只有显式构建的对象才会从弱表中移除。纯值，例如数字和轻量C函数，其不受GC的约束，因此它们不会从弱表中移除（除了收集它们所关联的值）。尽管字符串受制于GC，但其没有显式的结构且与纯值平等，比起对象其行为更类似于值。因此其也不会从弱表中移除。
 
@@ -325,7 +325,7 @@ var ::= prefixexp ‘.’ Name
 Lua支持着一组通俗易见的语句集，就像其他常见语言中的一样。其中包括块、赋值、控制结构、函数调用、以及变量声明。
 
 ### 3.3.1 - 语句块（Blocks）
-*语句块(Block)*是一个依序执行的语句列表：
+*语句块（Block）* 是一个依序执行的语句列表：
 ```
 block ::= {stat}
 ```
@@ -414,7 +414,7 @@ stat ::= if exp then block {elseif exp then block} [else block] end
 ```
 Lua也有**for**语句，其有两种用法（参见[3.3.5](#335---for语句)）。
 
-控制结构中的条件表达式可以返回任何值。**false**和**nil**均表示假值。所有不同于**nil**和**false**的值都表示真值。特别是数字0和空字符串也表示真值。
+控制结构中的条件表达式可以返回任何值。**false**和**nil**均表示假值。所有不同于**nil**和**false**的值都表示真值。尤其数字0和空字符串也表示真值。
 
 在**repeat-until**循环中，其里边的语法块不是以**until**关键词为结束，而是在条件语句的后面。所以其条件表达式可以引用循环语法块中声明的局部变量。
 
@@ -576,7 +576,7 @@ Lua在运行时中提供了对一些类型和表达的自动转换。位操作�
 
 出于需要，Lua中的有些地方会将字符串强制转换到数字。尤其string库会设置元函数以尝试在算术操作中将字符串转化为数字。如果转化失败，此库会调用另一个操作数的元函数（如果存在的话）或者抛出错误。注意位操作不会执行此转换。
 
-通常在良好实现中不会依赖字符串到数字的隐式转换，因为它们并不是一直适用的；特别是"1"==1为假，而"1"<1会抛出错误（参见[3.4.4](#344---关系操作)）。这些强制转换主要是因为兼容性，并且其可能在语言的未来版本中删除。
+通常在良好实现中不会依赖字符串到数字的隐式转换，因为它们并不是一直适用的；比如 "1" == 1 为假，而 "1" < 1 会抛出错误（参见[3.4.4](#344---关系操作)）。这些强制转换主要是因为兼容性，并且其可能在语言的未来版本中删除。
 
 字符串到数字或浮点数的转换遵循语法和Lua的词法解析器的规则。字符串的前后也可能有空格或其他字符。所有从字符串到数字的转换都接收点或者当前局部标记作为基数字符。（然而Lua的词法解析器只接受点。）如果字符串不是一个有效的数字表示，则转换失败。如果有必要，第一步的结果将按照之前的整数与浮点数的转换规则来转换到特定子类型。
 
@@ -1033,7 +1033,7 @@ int original_function (lua_State *L) {
 
 Lua将延续函数和源函数作相同看待。延续函数同样接收来自源函数的Lua栈，如果callee函数已经返回了，那么还是在相同的Lua状态机内。（例如，在[lua_callk](#lua_callk)之后，函数和其参数都从栈上移除了，取而代之的是调用结果。）其拥有同样的上值。无论如何，此返回都会被Lua作和源函数返回一样的处理。
 
-## 4.6 - 接口函数及其类型
+## 4.6 - 相关函数及类型
 <p>在这里我们列出了C API中所有的函数和类型，其按照字母顺序排列。每个函数都有一个像这样的标注：<span style="color:gray;float:right;font-size:small;">[-o, +p, <em>x</em>]</span>
 
 其中第一个属性o表示这个函数会从栈上弹出多少个元素。第二个属性p表示这个函数会把多少个元素压入栈。（任何函数都会在弹出其参数后再把其结果压入栈中。）x|y的形式的属性表示会压入（弹出）x个或者y个元素；其依情况为定；一个问号?表示不知道这个函数会压入（弹出）多少个元素，这取决于它们的参数。（例如依赖了栈内的什么值。）第三个属性x会告知这个函数有没有可能抛出错误：'-'意味着函数不会抛出任何错误；'m'意味着可能会抛出内存溢出的错误；'v'意味着这个函数可能会抛出在下文中解释的错误；'e'意味着这个函数可以运行任意Lua代码，无论是直接执行还是通过调用元函数，因此可能会抛出任何错误。
@@ -1060,7 +1060,7 @@ Lua假定所给的分配函数有以下的行为：
 
 当nsize为零时，分配函数必须有类似free的行为且返回NULL。
 
-当nsize非零时，分配函数的行为必须类似realloc。特别是当其不能满足分配请求时应当返回NULL。
+当nsize非零时，分配函数的行为必须类似realloc。尤其是当其不能满足分配请求时应当返回NULL。
 
 这里是分配函数的一个简单实现。它被[luaL_newstate](#)用在辅助库中：
 ```C
@@ -2029,3 +2029,194 @@ userdata 在Lua中表示一个C值。一个 *light userdata* 表示一个 *void 
 通常这个函数不会返回；当协程最终被恢复时，它会继续执行延续函数。然而有一种特殊情况：当其在行内或计数 hook 中被调用时（参见[4.7](#)）。在这种情况下，[lua_yieldk](#lua_yieldk)应当不使用延续函数（索性使用[lua_yield](#lua_yield)）且无结果返回，hook 也应当在此函数调用后立刻返回。Lua会让出，并当其再次唤醒时将继续执行并触发  hook 的函数。
 
 当其由一个Lua线程中的一个挂起的C调用且没有延续函数时（被称为C调用边界），此函数可能会抛出错误，或者在一个无法在运行时挂起的Lua线程中调用时（通常是Lua主线程）。
+
+
+## 4.7 - 调试接口
+Lua没有内置的调试工具。取而代之的是提供特殊的接口函数和*钩子 hooks*。这些接口可用于构建不同的调试器、监控、以及其他需要使用解释器“内部信息”的工具。
+
+### lua_Debug
+```C
+typedef struct lua_Debug {
+  int event;
+  const char *name;           /* (n) */
+  const char *namewhat;       /* (n) */
+  const char *what;           /* (S) */
+  const char *source;         /* (S) */
+  size_t srclen;              /* (S) */
+  int currentline;            /* (l) */
+  int linedefined;            /* (S) */
+  int lastlinedefined;        /* (S) */
+  unsigned char nups;         /* (u) 上值的数量 */
+  unsigned char nparams;      /* (u) 参数数量 */
+  char isvararg;              /* (u) */
+  char istailcall;            /* (t) */
+  unsigned short ftransfer;   /* (r) 被转移的第一个值的索引 */
+  unsigned short ntransfer;   /* (r) 被转移的值的数量 */
+  char short_src[LUA_IDSIZE]; /* (S) */
+  /* 私有部分 */
+  other fields
+} lua_Debug;
+```
+
+此结构体用于记录各种有关于函数或运行记录的信息部分。[lua_getstack](#lua_getstack)在最近的一次调用中只会填充此结构体的私有部分。如果需要填充[lua_Debug](#lua_debug)的其他字段以得到有用的信息，那么你必须使用一个合适的参数来调用[lua_getinfo](#lua_getinfo)函数。（具体说来，如果要获取某个字段，你必须要将上边代码块中对应字段后注释中用括号包围的字母传入到[lua_getinfo](#lua_getinfo)的 what 参数中。）
+
+[lua_Debug](#lua_debug)中的各字段的含义如下：
+
+* **source：** 所创建的函数的代码块源码。当 **source** 由字符 '@' 为首时，则意味着函数定义在 '@' 后跟的文件中。当 **source** 由字符 '=' 为首时，其后边的内容中对源码的描述是依赖于用户的。否则，该函数就是定义在 **source** 表示的字符串中的。
+* **srclen：** 字符串 **source** 的长度。
+* **short_src：** 一个“可打印”版本的 **source** ，用于错误信息中。
+* **linedefined：** 函数定义起始对应的行号。
+* **lastlinedefined：** 函数定义末尾对应的行号。
+* **what：** 当这个字符串内容为"Lua"时表示该函数是个Lua函数，为"C"时则是一个C函数，为"main"时则表示代码块的主体部分。
+* **currentline：** 表示给定函数的执行到哪一行了。当提供不了有效行数信息的时候，**currentline** 会被置为 -1。
+* **name：** 给定函数的合理名称。因为函数在Lua中是一等公民值，所以其没有固定的名称：有些函数是多个全局变量共有的值，其他的可能只是表中的字段。[lua_getinfo](#lua_getinfo)函数会检查函数的调用方式以找到一个合适的名字。如果没有找到，那么 **name** 会被置为NULL。
+* **namewhat：** 用于解释字段 **name**。**namewhat** 可以是"global"、"local"、"method"、"field"、"upvalue"、或者""（空字符串），取决于该函数的调用方式。（在似乎没有合适的选择时，Lua会使用空字符串。）
+* **istailcall：** 如果该函数是由尾调用形式唤起的则为true。在这种情况下，这一层的调用者不在栈中。
+* **nups：** 该函数的上值数量。
+* **nparams：** 该函数的参数数量（C函数中始终是0）。
+* **isvararg：** 该函数是否为可变参数函数（对于C函数来说始终为 true ）。
+* **ftransfer：** 被“转移”的第一个值在栈中的索引，即调用中的参数或返回语句中的返回值。（其他的值在第一个值其后边的连续索引中。）通过这个索引，你就可以使用[lua_getlocal](#lua_getlocal)和[lua_setlocal](#lua_setlocal)来访问或更改这些值。该字段只在调用 hook 期间标记第一个参数、或是返回 hook 中标记第一个返回的值中有意义。（对于调用 hook，该值始终为 1。）
+* **ntransfer：** 被“转移”（参见上一条）的值的数量。（对于Lua函数的调用，这个值总是等于 **nparams**。）
+
+### lua_gethook
+<span style="color:gray;float:right;font-size:small;">[-0, +0, <em>-</em>]</span>
+<pre>lua_Hook lua_gethook (lua_State *L);</pre>
+
+返回当前函数的 hook。
+
+### lua_gethookcount
+<span style="color:gray;float:right;font-size:small;">[-0, +0, <em>-</em>]</span>
+<pre>int lua_gethookcount (lua_State *L);</pre>
+
+返回当前函数的 hook 数量。
+
+### lua_gethookmask
+<span style="color:gray;float:right;font-size:small;">[-0, +0, <em>-</em>]</span>
+<pre>int lua_gethookmask (lua_State *L);</pre>
+
+返回当前 hook 的掩码。
+
+### lua_getinfo
+<span style="color:gray;float:right;font-size:small;">[-(0|1), +(0|1|2), <em>m</em>]</span>
+<pre>int lua_getinfo (lua_State *L, const char *what, lua_Debug *ar);</pre>
+
+获取某个函数或某个函数调用的信息。
+
+如需获取某个函数调用的信息，那么参数 ar 必须为一个有效的活动记录，其可以是由在此之前调用[lua_getstack]所填充的，或是作为 hook 的参数给出的（参见[lua_Hook](#lua_hook)）。
+
+如需获取某个函数的相关信息，你需要将其压入栈中并将字符串 what 的开头设为 '>' 字符。（这种情况下，[lua_getinfo](#lua_getinfo)会从栈上弹出这个函数。）例如，想知道函数 f 的定义，你可以这样写：
+```C
+    lua_Debug ar;
+    lua_getglobal(L, "f");  /* 获取全局函数 f */
+    lua_getinfo(L, ">S", &ar);
+    printf("%d\n", ar.linedefined);
+```
+
+字符串 what 中的各个字符都会使得结构体 ar 中的某些特定的字段被设置，或是将某个值压入到栈中。（这些字符在结构体[lua_Debug](#lua_debug)中各字段后的注释中标明了，在其中是由括号包围起来的字符。）各字符选项的含义如下所示：
+
+* **'f'：** 将运行在给定层级中的函数压入栈中。
+* **'l'：** 填充 currentline 字段。
+* **'n'：** 填充 name、namewhat 字段。
+* **'r'：** 填充 ftransfer、ntransfer 字段。
+* **'S'：** 填充 source、short_src、linedefined、lastlinedefined、what 字段。
+* **'t'：** 填充 istailcall 字段。
+* **'u'：** 填充 nups、nparams、isvararg 字段。
+* **'L'：** 将一个表压入栈中，该表的索引是在函数上关联的源代码行号，即那些可以打断点的行（不包括空行和注释）。如果该选项与选项 'f' 一起使用，那么再选项 'f' 压完栈之后再将这个表入栈。这是唯一可能抛出内存错误的选项。
+
+该函数返回0则表示 what 中有无效的字符选项，但此时其他的有效字符选项仍然会被处理。
+
+### lua_getlocal
+<span style="color:gray;float:right;font-size:small;">[-0, +(0|1), <em>-</em>]</span>
+<pre>const char *lua_getlocal (lua_State *L, const lua_Debug *ar, int n);</pre>
+
+获取给定的活动记录或函数中的局部变量或临时值的相关信息。
+
+如果是从一个活动记录中获取信息，那么参数 ar 必须是之前使用[lua_getstack](#lua_getstack)填充或是作为 hook 的参数给出（参见[lua_Hook](#lua_hook)）的有效活动记录。索引 n 决定了要查看哪个局部变量；关于局部变量索引和名称的细节，请参见[debug.getlocal](#)。
+
+[lua_getlocal](#lua_getlocal) 会将变量的值压入栈中并返回其名称。
+
+如果是从一个函数中获取信息，那么参数 ar 必须为NULL并且将要观察的函数放在栈顶上。这种情况下，只有Lua函数中的参数可见（因为没有关于活动变量的信息）并且不会将任何值压入栈中。
+
+### lua_getstack
+<span style="color:gray;float:right;font-size:small;">[-0, +0, <em>-</em>]</span>
+<pre>int lua_getstack (lua_State *L, int level, lua_Debug *ar);</pre>
+
+获取解释器运行时栈的相关信息。
+
+此函数会根据某个*活动记录 activation record* 的标识来填充结构体[lua_Debug](#lua_debug)的部分字段，这个活动记录来自于执行到给定层级 level 处的函数。当前运行的函数为第0层，而第 n+1 层的函数就是某个通过层层调用，调用了n层才到当前函数（尾调用不计数，其不算在调用栈层数中）。当传入的 level 参数大于当前调用栈的深度时，[lua_getstack](#lua_getstack)会返回0；否则返回1。
+
+### lua_getupvalue
+<span style="color:gray;float:right;font-size:small;">[-0, +(0|1), <em>-</em>]</span>
+<pre>const char *lua_getupvalue (lua_State *L, int funcindex, int n);</pre>
+
+获取给定索引处的闭包中的第 n 个上值。此函数会将对应上值的值压入栈中并返回它的名称。当索引 n 超出了实际上的上值数量时会返回 NULL（并且不会压栈）。
+
+更多关于上值的细节请参见[debug.getupvalue](#)。
+
+### lua_Hook
+<pre>typedef void (*lua_Hook) (lua_State *L, lua_Debug *ar);</pre>
+
+调试函数 hook 的类型。
+
+每当一个 hook 被调用，其参数 ar 的 event 字段都会被置为触发 hook 的特定事件。Lua使用这些常量来标识各种事件：LUA_HOOKCALL、LUA_HOOKRET、LUA_HOOKTAILCALL、LUA_HOOKLINE、LUA_HOOKCOUNT 。此外，在 line 事件中也会设置 currentline 字段。如要获取 ar 中的其他字段值，则必须调用[lua_getinfo](#lua_getinfo)。
+
+对于 call 事件， event 可以是 LUA_HOOKCALL 表示常规调用；或是 LUA_HOOKTAILCALL 表示尾调用，此时不会有相应的 return 事件。
+
+当Lua运行了一个 hook 时，它将屏蔽掉其他 hook 的调用。因此，当一个 hook 调用回了Lua并执行了某个函数或代码块，此时也不会触发其他的 hook 调用。
+
+hook 函数没有延续函数，即不能在调用 [lua_yieldk](#lua_yieldk)、[lua_pcallk](#lua_pcallk)、[lua_callk](#lua_callk) 使用非空的参数 k 。
+
+hook 函数可以在这些条件下让出：只有 count 事件和 line 事件中可以让出；为了可以让出，hook 函数必须调用[lua_yield](#lua_yield)完成执行，且参数 nresults 应当等于零（即没有返回值）。
+
+### lua_sethook
+<span style="color:gray;float:right;font-size:small;">[-0, +0, <em>-</em>]</span>
+<pre>void lua_sethook (lua_State *L, lua_Hook f, int mask, int count);</pre>
+
+设置调试用的 hook 函数。
+
+参数 f 就是 hook 函数。mask 表示那些事件会触发 hook ：其格式为各事件常量的按位或的结果，常量有 LUA_MASKCALL、LUA_MASKRET、LUA_MASKLINE、LUA_MASKCOUNT 。参数 count 只会在 mask 包括 LUA_MASKCOUNT 时才有意义。对于每个事件的 hook 调用的解释如下：
+
+* **call hook：** 当解释器调用一个函数时触发。这个 hook 只在Lua进入一个新函数后调用。 
+* **return hook：** 当解释器从一个函数中返回时触发。这个 hook 只在Lua离开函数后调用。 
+* **line hook：** 当解释器开始执行到代码新的一行时触发，或在其跳转回代码中时也会触发（即使是跳转到相同地方的代码）。这个事件只会在执行函数中触发。
+* **count hook：** 解释器每当执行了 count 条指令后触发。这个事件只会在执行函数中触发。
+
+可以将 mask 置零以禁用 hook 。
+
+### lua_setlocal
+<span style="color:gray;float:right;font-size:small;">[-(0|1), +0, <em>-</em>]</span>
+<pre>const char *lua_setlocal (lua_State *L, const lua_Debug *ar, int n);</pre>
+
+设置给定的活动记录中的局部变量的值。此函数会将栈顶上的值赋给这个局部变量并返回变量名。同时也会将栈顶上的值弹出。
+
+当给出的索引大于实际上正活跃的变量数量时会返回NULL（而且不会将任何值从栈上弹出）。
+
+参数 ar 和 n 和在[lua_getlocal](#lua_getlocal)中的相同。
+
+### lua_setupvalue
+<span style="color:gray;float:right;font-size:small;">[-(0|1), +0, <em>-</em>]</span>
+<pre>const char *lua_setupvalue (lua_State *L, int funcindex, int n);</pre>
+
+设置一个闭包的上值。此函数会将栈顶上的值赋给这个上值并返回其名称。同时也会将栈顶上的值弹出。
+
+当给出的索引大于上值数量时会返回NULL（而且不会将任何值从栈上弹出）。
+
+参数 funcindex 和 n 和在[lua_getupvalue](#lua_getupvalue)中的相同。
+
+### lua_upvalueid
+<span style="color:gray;float:right;font-size:small;">[-0, +0, <em>-</em>]</span>
+<pre>void *lua_upvalueid (lua_State *L, int funcindex, int n);</pre>
+
+返回给定索引 funcindex 处的闭包中的第 n 个上值的唯一标识。
+
+此唯一标识可以用于区分不同的闭包之间是否共享了同一个上值。对于共享了上值的闭包（即访问了同样的外部局部变量），其返回共享上值的唯一标识也是相同的。
+
+参数 funcindex 和 n 和在[lua_getupvalue](#lua_getupvalue)中的相同，但是 n 不可以大于上值的数量。
+
+### lua_upvaluejoin
+<span style="color:gray;float:right;font-size:small;">[-0, +0, <em>-</em>]</span>
+<pre>void lua_upvaluejoin (lua_State *L, int funcindex1, int n1,
+                                    int funcindex2, int n2);</pre>
+
+使索引 funcindex1 处的闭包中第 n1 个上值引用索引 funcindex2 处的闭包中第 n2 个上值。即之前提到的闭包之间共享上值。
+
