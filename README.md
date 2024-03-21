@@ -2731,3 +2731,56 @@ typedef struct luaL_Stream {
 文件句柄是作为一个 full userdata 实现的，其带有一个称为 LUA_FILEHANDLE（一个由宏定义的元表名称）的元表。这个元表是由I/O库创建的（参见[luaL_newmetatable](#lual_newmetatable)）。
 
 其实现的 userdata 中必须由 [luaL_Stream](#lual_stream)结构作为起始，要包含的其他数据应该放在初始结构的后面。字段 f 指向了其对应的 C stream（或者可以为NULL以表示未完全创建的句柄）。字段 closef 指向了一个当句柄被关闭或回收时用来关闭这个流的函数；此函数接收对应的文件句柄作为唯一的参数，成功时必须返回 true，或折失败的时候返回false加上一个错误消息。一旦Lua调用了这个字段，其就会将该字段置为NULL以表示句柄被关闭了。
+
+### luaL_testudata
+<span style="color:gray;float:right;font-size:small;">[-0, +0, <em>m</em>]</span>
+<pre>void *luaL_testudata (lua_State *L, int arg, const char *tname);</pre>
+
+此函数类似于[luaL_checkudata](#lual_checkudata)，不同之处在于，在测试失败的时候会返回NULL而不是抛出错误。
+
+### luaL_tolstring
+<span style="color:gray;float:right;font-size:small;">[-0, +1, <em>e</em>]</span>
+<pre>const char *luaL_tolstring (lua_State *L, int idx, size_t *len);</pre>
+
+将给出索引处的Lua值用按照可解释的格式转换到C字符串。将结果字符串压入栈中并将其作为该函数的返回值（参见[4.1.3](#413---字符串指针)）。如果 len 不为NULL，此函数也会就将 \*len 置为该字符串的长度。
+
+如果给出索引处的Lua值有元表并其中包含了 __tostring 字段，那么[luaL_tolstring](#lual_tolstring)会将此值作为参数来调用相应的元函数，最后将调用结果作为此函数的结果。
+
+### luaL_traceback
+<span style="color:gray;float:right;font-size:small;">[-0, +1, <em>m</em>]</span>
+<pre>void luaL_traceback (lua_State *L, lua_State *L1, const char *msg,
+                     int level);</pre>
+
+新建回溯信息并将其压入到L1的栈中。如果参数 msg 不为 NULL，那么会将其添加到回溯信息的开头。参数 level 指出了从哪一级开始回溯。
+
+### luaL_typeerror
+<span style="color:gray;float:right;font-size:small;">[-0, +0, <em>v</em>]</span>
+<pre>int luaL_typeerror (lua_State *L, int arg, const char *tname);</pre>
+
+抛出一个标准消息格式的类型错误，其和正在调用的C函数的第 arg 个参数相关；参数 tname 是函数需要的类型。此函数永不返回。
+
+### luaL_typename
+<span style="color:gray;float:right;font-size:small;">[-0, +0, <em>-</em>]</span>
+<pre>const char *luaL_typename (lua_State *L, int index);</pre>
+
+返回给定索引处值的类型名。
+
+### luaL_unref
+<span style="color:gray;float:right;font-size:small;">[-0, +0, <em>-</em>]</span>
+<pre>void luaL_unref (lua_State *L, int t, int ref);</pre>
+
+释放索引 index 处表的引用 ref(参见[luaL_ref](#lual_ref))。因为该条目从表中移除了，所以引用的对象可以被回收。引用 ref 的值释放后也可以再次使用。
+
+当 ref 值为[LUA_NOREF](#lual_ref)或[LUA_REFNIL](#lual_ref)时，[luaL_unref](#lual_unref)什么都不会做。
+
+### luaL_where
+<span style="color:gray;float:right;font-size:small;">[-0, +1, <em>m</em>]</span>
+<pre>void luaL_where (lua_State *L, int lvl);</pre>
+
+将一个表示当前控制流相对于调用栈的 lvl 层的所在位置的字符串压入栈中。通常这个字符串有以下格式：
+
+<pre><em>chunkname</em>:<em>currentline</em>:</pre>
+
+第 0 层为当前运行的函数，第 1 层为调用这个函数的函数，以此类推。
+
+此函数一般用于构建错误信息的前缀。
