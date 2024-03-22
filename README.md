@@ -46,7 +46,7 @@ Lua可以同时调用由Lua或C编写（参见[3.4.10](#3410---函数调用)）�
 
 表、函数、线程、以及（full）userdata都是对象，因此变量其实并不是 *包含（contain）* 它们的值，而只是 *引用（reference）* 了它们。赋值、传递参数和函数返回都是在操作这些值的引用，这些操作不涉及任何复制。
 
-可使用库函数[type](#)来获得给定值的类型描述（参见[type](#)）。
+可使用库函数[type](#type-v)来获得给定值的类型描述（参见[type](#type-v)）。
 
 
 ## 2.2 - 环境和全局环境
@@ -58,33 +58,33 @@ Lua可以同时调用由Lua或C编写（参见[3.4.10](#3410---函数调用)）�
 
 Lua保存着一个叫做 *全局环境（global enviroment）* 的特定环境，它的值被保存在C注册表（参见[4.3](#43---注册表)）中的一个特殊索引上。在Lua中，全局变量_G被初始化为之前所保存的值（_G未被内部使用，所以更改_G的值只会影响你自己的代码）。
 
-当Lua加载了一个代码块，其_ENV变量的默认值为全局环境（参见[load](#)）。因此，一般来说Lua中的自由名称是对全局环境中成员的引用，所以它们也称作 *全局变量（global variables）* 。此外，所有的独立库都被加载到全局环境中且有些函数会操作它们的环境。你可以使用[load](#)（或者[loadfile]()）来将代码块加载到不同的环境中。（对于C，你可以在直接加载代码块并改变第一个upvalue的值；参见[lua_setupvalue](#)）
+当Lua加载了一个代码块，其_ENV变量的默认值为全局环境（参见[load](#load-chunk--chunkname--mode--env)）。因此，一般来说Lua中的自由名称是对全局环境中成员的引用，所以它们也称作 *全局变量（global variables）* 。此外，所有的独立库都被加载到全局环境中且有些函数会操作它们的环境。你可以使用[load](#load-chunk--chunkname--mode--env)（或者[loadfile]()）来将代码块加载到不同的环境中。（对于C，你可以在直接加载代码块并改变第一个upvalue的值；参见[lua_setupvalue](#lua_setupvalue)）
 
 ## 2.3 - 错误处理
 在Lua中有些操作会 *抛出（raise）* 错误。错误会打断程序的正常流程，可以通过 *捕获（catching）* 错误来继续。
 
-Lua代码可以通过调用[error](#)函数来显式地抛出异常。（此函数永远不返回。）
+Lua代码可以通过调用[error](#error-message--level)函数来显式地抛出异常。（此函数永远不返回。）
 
-对于在Lua中捕获异常，你可以使用[pcall](#)（或者[xpcall](#)）来发起一个 *保护调用（protected call）*。[pcall](#)函数将在 *保护模式（protected mode）* 下调用给定函数。任何错误的产生都会停止执行函数，控制流直接返回到[pcall](#)调用处，并返回其状态码。
+对于在Lua中捕获异常，你可以使用[pcall](#pcall-f--arg1)（或者[xpcall](#xpcall-f-msgh--arg1)）来发起一个 *保护调用（protected call）*。[pcall](#pcall-f--arg1)函数将在 *保护模式（protected mode）* 下调用给定函数。任何错误的产生都会停止执行函数，控制流直接返回到[pcall](#pcall-f--arg1)调用处，并返回其状态码。
 
 因为Lua是一个被嵌入的扩展语言，Lua代码的启动执行是由宿主程序中的C代码调用的。（当你独立使用Lua的时候，宿主程序就是那个lua应用程序。）通常此调用都是被保护的；所以当一个其他错误发生在Lua块的编译或执行中时，控制流会回到宿主处，宿主程序就可以采取合适的措施，例如打印错误消息。
 
 每当有错误的时候，带着关于其信息的一个错误对象会被生成出来。Lua本身只生成其错误对象为字符串的错误，但是程序将任何类型作为其生成错误的错误对象。这些错误对象有Lua程序或宿主来对其做处理。因为一些历史原因，错误对象通常被称之为 *错误信息（error message）* , 尽管它不一定非得是个字符串。
 
-当你使用[xpcall](#)（或者C接口[lua_pcall](#lua_pcall)）时，你可以给定一个 *消息处理方法（ message handler）* 用于错误处理中。这个方法由原始的错误对象调用并返回一个新的错误对象。它于错误出现时调用栈展开前被调用，所以它可以收集更多有关于错误的信息，例如调查栈并创建一个栈的回溯信息。这个消息处理方法仍然处于保护模式下，所以消息处理方法中的错误会再次出发消息处理方法。如果这个循环持续得太长了，Lua会打断并返回一个合适的消息。这个消息处理方法只会用于合规的运行时错误，它不会因为内存分配错误而被调用，也不会因为运行结束器或其他消息处理方法而被调用。
+当你使用[xpcall](#xpcall-f-msgh--arg1)（或者C接口[lua_pcall](#lua_pcall)）时，你可以给定一个 *消息处理方法（ message handler）* 用于错误处理中。这个方法由原始的错误对象调用并返回一个新的错误对象。它于错误出现时调用栈展开前被调用，所以它可以收集更多有关于错误的信息，例如调查栈并创建一个栈的回溯信息。这个消息处理方法仍然处于保护模式下，所以消息处理方法中的错误会再次出发消息处理方法。如果这个循环持续得太长了，Lua会打断并返回一个合适的消息。这个消息处理方法只会用于合规的运行时错误，它不会因为内存分配错误而被调用，也不会因为运行结束器或其他消息处理方法而被调用。
 
-Lua还提供了系统警告 *warnings* （参见[warn](#)）。与错误不同，警告不会以任何方式干扰程序执行。它通常只是生成一个消息给用户，尽管此行为可以用C改变（参见[lua_setwarnf](#lua_setwarnf)）。
+Lua还提供了系统警告 *warnings* （参见[warn](#warn-msg1)）。与错误不同，警告不会以任何方式干扰程序执行。它通常只是生成一个消息给用户，尽管此行为可以用C改变（参见[lua_setwarnf](#lua_setwarnf)）。
 
 ## 2.4 - 元表和元函数
 每个值都可以有 *元表（metatable）*。*元表* 是定义了原始数据在某些事件下行为的一个普通Lua表。你可以通过设置其元表的某些特定属性来改变某个值的某些行为。举个例子，一个非数字值进行加法操作时，Lua会在这个值的元表中查找__add属性函数，找到了的情况下，Lua就会调用这个函数来执行加法操作。
 
 元表中的每个事件对应的键都是一个字符串，内容是以两个下划线做前缀的事件名，其相应的值被称为 *元值（metavalue）*。对于大部分事件，其元值必须是一个称为 *元函数（metamethod）* 的方法。在上边说的例子里，键值是“_add”字符串且元函数是一个用来做加法操作的方法。若非另有说明，元函数实际上可以是任意可调用的值，它要么是个函数，要么是个带有元方法“__call”的值。
 
-你可以使用[getmetatable](#)方法来查询任何值的元表。Lua使用原始访问（参见[rawget](#)）来查询元表中的元函数。
+你可以使用[getmetatable](#getmetatable-object)方法来查询任何值的元表。Lua使用原始访问（参见[rawget](#rawget-table-index)）来查询元表中的元函数。
 
-你可以使用[setmetatable](#)方法来替换表的元表。你不能从Lua代码中改变其他类型的元表，除非使用调试库（参见[6.10](#)）。
+你可以使用[setmetatable](#setmetatable-table-metatable)方法来替换表的元表。你不能从Lua代码中改变其他类型的元表，除非使用调试库（参见[6.10](#)）。
 
-表和full userdata有单独的元表，尽管多个表和userdata之间可以共享它们的元表。其他类型的值共享每个类型的单独元表；即，存在一个单独的元表给所有数字使用，一个单独的元表给所有的字符串使用，等等。默认情况下，值没有元表，但是字符串库给字符串类型设置了一个元表（参见[6.4](#)）。
+表和full userdata有单独的元表，尽管多个表和userdata之间可以共享它们的元表。其他类型的值共享每个类型的单独元表；即，存在一个单独的元表给所有数字使用，一个单独的元表给所有的字符串使用，等等。默认情况下，值没有元表，但是字符串库给字符串类型设置了一个元表（参见[6.4](#46---相关函数及类型)）。
 
 下面给出了关于元表控制的操作的详细列表。每种事件由对应的键标识。按约定，所有的元表键由两个下划线后跟小写拉丁字母组合而成。
 
@@ -107,10 +107,10 @@ Lua还提供了系统警告 *warnings* （参见[warn](#)）。与错误不同�
 * **__lt：** 判断小于（<）操作。行为类似于加法操作，不同之处在于当这些值既不是都是数字也不都是字符串时，Lua将尝试调用元函数。另外，其结果总是会被转换为一个布尔值。
 * **__le：** 判断小于等于（<=）操作。行为类似于判断小于操作。
 * **__index：** 访问索引（*table\[key\]*）操作。这个操作发生在*table*不是一个表或者*key*不存在于*table*中的情况下。此时将会在*table*的元表中查找其元值。<br/>此事件的元值可以是一个方法、一个表、或者任何带有__index元值的值。如果是方法，它会将*table*和*key*作为参数来调用，调用结果（调整为单值）作为操作结果。否则，最终的结果是其元值索引*key*的结果。此索引是常规索引，而非直接索引，所以可以出发其他的__index元值。
-* **__newindex：** 赋值索引（*table\[key\]*）操作。像index事件一样，在*table*不是一个表或者*key*不存在于*table*中时，将会在*table*的元表中查找其元值。<br/>与索引类似，此元值可以是方法、表、或者任何带有__newindex元值的值。如果是方法，它会将*table*、*key*和*value*作为参数来调用。否则，Lua将再次对这个元值做索引赋值。这里的赋值流程是常规赋值，而不是直接的赋值，所以它可能会触发其他地方的__newindex元值。<br/>无论何时，当__newindex元值被调用，Lua不会执行任何更多的赋值操作。如果需要，元函数自身可以调用[rawset](#)来做赋值。
+* **__newindex：** 赋值索引（*table\[key\]*）操作。像index事件一样，在*table*不是一个表或者*key*不存在于*table*中时，将会在*table*的元表中查找其元值。<br/>与索引类似，此元值可以是方法、表、或者任何带有__newindex元值的值。如果是方法，它会将*table*、*key*和*value*作为参数来调用。否则，Lua将再次对这个元值做索引赋值。这里的赋值流程是常规赋值，而不是直接的赋值，所以它可能会触发其他地方的__newindex元值。<br/>无论何时，当__newindex元值被调用，Lua不会执行任何更多的赋值操作。如果需要，元函数自身可以调用[rawset](#rawset-table-index-value)来做赋值。
 * **__call：** 调用方法*func(args)*操作。此事件发生在Lua尝试调用一个non-function值（即，*func*不是个方法）的时候。将在*func*中寻找此元函数。如果存在，会将*func*作为第一个参数，再在后边加上其原本调用的参数列表来调用此元函数。所有此操作的结果都将作为其调用结果。这是唯一一个允许多个返回结果的元函数。
 
-除了上述列表外，解释器还遵循了以下元表中的键：__gc（参见[2.5.3](#253---gc元函数garbage-collection-metamethods)），__close（参见[3.3.8](#338---待关闭变量)），__mode（参见[2.5.4](#254---弱表weak-tables)），以及__name。（[tostring](#)和错误消息中可能会用到包含字符串的__name。）
+除了上述列表外，解释器还遵循了以下元表中的键：__gc（参见[2.5.3](#253---gc元函数garbage-collection-metamethods)），__close（参见[3.3.8](#338---待关闭变量)），__mode（参见[2.5.4](#254---弱表weak-tables)），以及__name。（[tostring](#tostring-v)和错误消息中可能会用到包含字符串的__name。）
 
 对于一元操作（取负、取长度和按位取否）而，元函数是使用虚拟的第二个操作数来计算和调用的，其等于第一个操作数。这个多余的操作数只是为了简化Lua的内部结构（使得这些操作和二元操作做相似的行为），并且在未来的版本中可能会删掉这些。对于大部分用途，这个多余的操作数都是无所谓的。
 
@@ -127,7 +127,7 @@ Lua中的垃圾收集器（GC）有两种工作模式：步进模式和代际模
 
 默认参数设置下的默认GC对大多数用户来说已经足够了。然而，有大量浪费在分配和释放内存的耗时程序可以从其他的设置中收益。请记住对于跨平台和跨Lua版本的GC行为是不可移植（non-portable）的，因此优化设置也是不可移植的。
 
-你可以使用不同的参数在C中调用[lua_gc](#lua_gc)或在Lua中调用[collectgarbage](#)来改变GC模式。你也可以使用这些函数来直接控制收集器（例如停止或重启它）。
+你可以使用不同的参数在C中调用[lua_gc](#lua_gc)或在Lua中调用[collectgarbage](#collectgarbage-opt--arg)来改变GC模式。你也可以使用这些函数来直接控制收集器（例如停止或重启它）。
 
 ### 2.5.1 - 步进GC（Incremental Garbage Collection）
 在步进模式中，每个GC循环都是一小步一小步地与程序一起交错执行标记-扫描清理。这个模式下的收集器使用三个数字来控制GC循环：*GC停步（garbage-collector pause）*，*GC步进乘数（garbage-collector step multiplier）*，以及*GC步数（garbage-collector step size）*。
@@ -180,15 +180,15 @@ Lua中的垃圾收集器（GC）有两种工作模式：步进模式和代际模
 ## 2.6 - 协程（Coroutines）
 Lua支持*协程（Coroutines）*，其也被称为*协同式线程（collaborative multithreading）*。Lua中的协程表示一个独立执行线程。然而不同于多线程系统中的线程，协程只能通过显示调用让出函数来挂起自身的执行。
 
-通过调用[coroutine.create](#)你可以创建一个协程。此函数的唯一参数是用作协程主函数的方法。*create*函数只是创建一个新协程并返回其句柄（一个*thread*类型的对象），并不会启动协程。
+通过调用[coroutine.create](#coroutinecreate-f)你可以创建一个协程。此函数的唯一参数是用作协程主函数的方法。*create*函数只是创建一个新协程并返回其句柄（一个*thread*类型的对象），并不会启动协程。
 
-你可以调用[coroutine.resume](#)来执行协程。当你首次调用[coroutine.resume](#)，需要将[coroutine.create](#)返回的结果作为第一个参数传递，协程将会通过调用其主函数来启动执行。其余传递给[coroutine.resume](#)的参数会被传递到这个函数中。启动协程将会一直运行，直到它结束或*让出（yields）*。
+你可以调用[coroutine.resume](#coroutineresume-co--val1)来执行协程。当你首次调用[coroutine.resume](#coroutineresume-co--val1)，需要将[coroutine.create](#coroutinecreate-f)返回的结果作为第一个参数传递，协程将会通过调用其主函数来启动执行。其余传递给[coroutine.resume](#coroutineresume-co--val1)的参数会被传递到这个函数中。启动协程将会一直运行，直到它结束或*让出（yields）*。
 
-协程可以通过两种方式来结束运行：通常情况下是其主函数返回（显式或隐式，在最后一条指令后）；特别情况是产生了未在保护下的错误。正常结束的情况下，[coroutine.resume](#)返回**true**，后跟协程的主函数返回的任意结果值。在发生错误时，[coroutine.resume](#)返回**false**，后边跟着错误对象。这种情况下，协程不会展开堆栈，所以在错误发生后可以通过调试API来调查。
+协程可以通过两种方式来结束运行：通常情况下是其主函数返回（显式或隐式，在最后一条指令后）；特别情况是产生了未在保护下的错误。正常结束的情况下，[coroutine.resume](#coroutineresume-co--val1)返回**true**，后跟协程的主函数返回的任意结果值。在发生错误时，[coroutine.resume](#coroutineresume-co--val1)返回**false**，后边跟着错误对象。这种情况下，协程不会展开堆栈，所以在错误发生后可以通过调试API来调查。
 
-协程通过调用[coroutine.yield](#)来让出。当协程让出时，相应的[coroutine.resume](#)会立刻返回，即使让出发生在内嵌的函数调用中（即不在主函数中，而是在主函数直接或间接调用的函数中）。当在让出的情况下，[coroutine.resume](#)也是返回**true**，后跟由[coroutine.yield](#)传递而来的值。当你下次重启同一个协程时，其将会在之前让出的地方继续执行，调用[coroutine.yield](#)的地方会返回由[coroutine.resume](#)传递过来的额外参数。
+协程通过调用[coroutine.yield](#coroutineyield)来让出。当协程让出时，相应的[coroutine.resume](#coroutineresume-co--val1)会立刻返回，即使让出发生在内嵌的函数调用中（即不在主函数中，而是在主函数直接或间接调用的函数中）。当在让出的情况下，[coroutine.resume](#coroutineresume-co--val1)也是返回**true**，后跟由[coroutine.yield](#coroutineyield)传递而来的值。当你下次重启同一个协程时，其将会在之前让出的地方继续执行，调用[coroutine.yield](#coroutineyield)的地方会返回由[coroutine.resume](#coroutineresume-co--val1)传递过来的额外参数。
 
-像[coroutine.create](#)一样，[coroutine.warp](#)函数也可以创建协程，但不返回协程本身，而是返回一个用来启动协程的函数。任何传递到这个函数的参数都会作为[coroutine.resume](#)的额外参数传入。[coroutine.warp](#)返回所有[coroutine.resume](#)的值，除了第一个（那个布尔错误码）。与[coroutine.resume](#)不同，由[coroutine.warp](#)创建的函数不会传播任何错误给用户。这种情况下，此函数还会关闭协程（参见[coroutine.close](#)）。
+像[coroutine.create](#coroutinecreate-f)一样，[coroutine.wrap](#coroutinewrap-f)函数也可以创建协程，但不返回协程本身，而是返回一个用来启动协程的函数。任何传递到这个函数的参数都会作为[coroutine.resume](#coroutineresume-co--val1)的额外参数传入。[coroutine.warp](#coroutinewrap-f)返回所有[coroutine.resume](#coroutineresume-co--val1)的值，除了第一个（那个布尔错误码）。与[coroutine.resume](#coroutineresume-co--val1)不同，由[coroutine.wrap](#coroutinewrap-f)创建的函数不会传播任何错误给用户。这种情况下，此函数还会关闭协程（参见[coroutine.close](#coroutineclose-co)）。
 
 作为一个展示协程如何工作的例子，请考量以下代码：
 ```lua
@@ -245,7 +245,7 @@ local     nil       not       or        repeat    return
 then      true      until     while
 ```
 
-Lua是大小写敏感的语言：*and*是保留词，但是*And*和*AND* 就是两个不同的有效名称了。在惯例下，程序应当避免创建以下划线开头、后跟一个或多个大写字母的名称（例如[_VERSION](#)）。
+Lua是大小写敏感的语言：*and*是保留词，但是*And*和*AND* 就是两个不同的有效名称了。在惯例下，程序应当避免创建以下划线开头、后跟一个或多个大写字母的名称（例如[_VERSION](#_version)）。
 
 以下是一些其他标识：
 ```
@@ -371,7 +371,7 @@ Lua将一个代码块作为具有可变参数的匿名函数体来处理（参�
 
 代码块可以被存储在文件或宿主程序的字符串中。当执行一个代码块，Lua首先会*加载*它，将代码块中的代码预编译为虚拟机的指令，然后Lua通过虚拟机的解释器来执行编译后的代码。
 
-代码块被预编译为二进制形式；细节请参见程序luac和[string.dump](#)函数。程序中的代码形式和编译后形式是可以互换的；Lua会自动检测文件类型并采取相应行动（参见[load](#)）。
+代码块被预编译为二进制形式；细节请参见程序luac和[string.dump](#)函数。程序中的代码形式和编译后形式是可以互换的；Lua会自动检测文件类型并采取相应行动（参见[load](#load-chunk--chunkname--mode--env)）。
 
 ### 3.3.3 - 赋值
 Lua允许多重赋值。因此，Lua的赋值语法定义成左边是变量列表而右边是表达式列表。其两边的列表都以逗号分隔元素：
@@ -512,7 +512,7 @@ attrib ::= [‘<’ Name ‘>’]
 
 如果在调用关闭函数时出现了错误，此错误将会被当作在其变量定义处的一段常规代码所抛出的错误处理。在错误结束后，其他待定的关闭函数仍然会被调用。
 
-如果协程让出或再也不重启了，一些变量可能永远不会超出作用域，因此它们将永远不会关闭。（这些变量在协程内部创建的，且在协程让出点之前的范围内。）类似的，如果协程因为错误而退出了，其不会展开其堆栈，因此也不会关闭任何变量。在这些情况下，你可以使用终结器或者调用[coroutine.close](#)来关闭变量。然而，如果协程是用[coroutine.wrap](#)创建的，那么其相应的函数要在发生错误的情况下关闭协程。
+如果协程让出或再也不重启了，一些变量可能永远不会超出作用域，因此它们将永远不会关闭。（这些变量在协程内部创建的，且在协程让出点之前的范围内。）类似的，如果协程因为错误而退出了，其不会展开其堆栈，因此也不会关闭任何变量。在这些情况下，你可以使用终结器或者调用[coroutine.close](#coroutineclose-co)来关闭变量。然而，如果协程是用[coroutine.wrap](#coroutinewrap-f)创建的，那么其相应的函数要在发生错误的情况下关闭协程。
 
 ## 3.4 - 表达式
 以下是Lua中基本的表示式：
@@ -947,7 +947,7 @@ API中的有些函数会在栈中返回一个指向Lua字符串的指针（const
 
 通常来说，Lua的GC可以释放或移动内部内存和已失效的内部字符串指针。为了安全地使用这些指针，只要字符串值的索引没有从栈中移除，那么API就会保证在所有栈内索引此字符串的指针有效。（尽管它可以移动到另一个索引上。）当索引是一个伪索引（引用的是一个上值）时，只要相关调用仍然活跃且相关上值没有被改动，其指针就是有效的。
 
-调试接口中有些函数也可以返回字符串指针，它们分别是[lua_getlocal](#)、[lua_getupvalue](#)以及[lua_setupvalue](#)。对于这些函数，只要这个函数调用仍在活跃且所给（如果有）闭包还在栈中，那么其指针保证有效。
+调试接口中有些函数也可以返回字符串指针，它们分别是[lua_getlocal](#lua_getlocal)、[lua_getupvalue](#lua_getupvalue)以及[lua_setupvalue](#lua_setupvalue)。对于这些函数，只要这个函数调用仍在活跃且所给（如果有）闭包还在栈中，那么其指针保证有效。
 
 在这些保证之外的情况下，GC可以自由决定内部字符串的指针是否有效。
 
@@ -961,7 +961,7 @@ C闭包也可以更改其相关上值的值。
 ## 4.3 - 注册表
 Lua提供了*注册表*，是一个在C代码中用来存储所需Lua值的预定义表。这个注册表通常使用伪索引 LUA_REGISTRYINDEX 来访问。所有C库都可以在这个表中存储数据，但是必须注意所选择的键要与其他库区分，以避免碰撞。通常你应该使用包含库名的字符串，或者使用一个带有你代码中C对象地址的 light userdata ，亦或使用你的代码所创建的Lua对象来当作注册表的键。与变量名的约定一样，注册表中的以下划线开头后跟大写字母的字符串Lua的保留键。
 
-注册表中的数字键被用于引用机制（参见[luaL_ref](#)）和一些预定义值。因此，注册表中的数字键绝对不能用于其他目的。
+注册表中的数字键被用于引用机制（参见[luaL_ref](#lual_ref)）和一些预定义值。因此，注册表中的数字键绝对不能用于其他目的。
 
 当你创建一个新的Lua状态机，其注册表会附带一些预定义的值。这些预定义值的索引使用的整数键定义在lua.h中。定义的常量有：
 * **LUA_RIDX_MAINTHREAD**：状态机的Lua主线程在注册表中的索引位置。（在整个状态机中主线程一共只创建一次。）
@@ -1062,7 +1062,7 @@ Lua假定所给的分配函数有以下的行为：
 
 当nsize非零时，分配函数的行为必须类似realloc。尤其是当其不能满足分配请求时应当返回NULL。
 
-这里是分配函数的一个简单实现。它被[luaL_newstate](#)用在辅助库中：
+这里是分配函数的一个简单实现。它被[luaL_newstate](#lual_newstate)用在辅助库中：
 ```C
 static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize) {
   (void)ud;  (void)osize;  /* not used */
@@ -1249,7 +1249,7 @@ op值必须为以下常量：
 <span style="color:gray;float:right;font-size:small;">[-1, +0, <em>v</em>]</span>
 <pre>int lua_error (lua_State *L);</pre>
 
-抛出一个Lua错误，使用栈顶上的值作为错误对象。此函数会发生long jump，因此永不返回（参见[luaL_error](#)）。
+抛出一个Lua错误，使用栈顶上的值作为错误对象。此函数会发生long jump，因此永不返回（参见[luaL_error](#lual_error)）。
 
 ### lua_gc
 <span style="color:gray;float:right;font-size:small;">[-0, +0, <em>-</em>]</span>
@@ -1267,7 +1267,7 @@ GC行为控制。
 * **LUA_GCINC (int pause, int stepmul, stepsize)**：根据所给参数将GC变为步进模式（参见[2.5.1](#251---步进gcincremental-garbage-collection)）。并返回之前使用的模式（LUA_GCGEN 或是 LUA_GCINC）。
 * **LUA_GCGEN (int minormul, int majormul)**：根据所给参数将GC变为代际模式（参见[2.5.1](#251---步进gcincremental-garbage-collection)）。并返回之前使用的模式（LUA_GCGEN 或是 LUA_GCINC）。
 
-更多细节请参见[collectgarbage](#)。
+更多细节请参见[collectgarbage](#collectgarbage-opt--arg)。
 
 此函数不应当在终结器中调用。
 
@@ -1456,9 +1456,9 @@ Lua还定义了常量 LUA_MININTEGER 和 LUA_MAXINTEGER，用于表示此类型�
 
 [lua_load](#lua_load)函数通过用户提供的reader函数来读取代码块（参见[lua_Reader](#lua_reader)）。data参数是一个要传递给reader的不透明值。
 
-参数chunkname是所给代码块的名称，会被用在错误消息和调试信息中（参见[4.7](#)）。
+参数chunkname是所给代码块的名称，会被用在错误消息和调试信息中（参见[4.7](#47---调试接口)）。
 
-[lua_load](#lua_load)会自动检测传入的代码块是文本还是二进制格式然后用合适的方式加载它（参见 luac 程序）。字符串参数mode的工作方式和[load](#)函数中的相同，另有不同的是，当mode值为NULL时等效于字符串"bt"。
+[lua_load](#lua_load)会自动检测传入的代码块是文本还是二进制格式然后用合适的方式加载它（参见 luac 程序）。字符串参数mode的工作方式和[load](#load-chunk--chunkname--mode--env)函数中的相同，另有不同的是，当mode值为NULL时等效于字符串"bt"。
 
 [lua_load](#lua_load)内部也使用了栈，所以reader函数在返回是必须使得栈保持不变。
 
@@ -1515,7 +1515,7 @@ while (lua_next(L, t) != 0) {
 ```
 当遍历表时应当避免直接对键调用[lua_tolstring](#lua_tolstring)，除非你知道键确实是个字符串。[lua_tolstring](#lua_tolstring)可能会改变给出索引处的值；这样会和下一次调用[lua_next](#lua_next)混淆在一起。
 
-当给的键既不是**nil**也不存在于表中时，此函数可能会抛出错误。与在遍历过程中更改表相关的注意事项请参见[next](#)函数。
+当给的键既不是**nil**也不存在于表中时，此函数可能会抛出错误。与在遍历过程中更改表相关的注意事项请参见[next](#next-table--index)函数。
 
 ### lua_Number
 <pre>typedef ... lua_Number;</pre>
@@ -1987,7 +1987,7 @@ userdata 在Lua中表示一个C值。一个 *light userdata* 表示一个 *void 
 
 警告函数的类型，由Lua发出警告时调用。第一个参数是由[lua_setwarnf](#lua_setwarnf)设置的一个不透明指针。第二个参数是警告消息。第三个参数是个布尔值，用以表示是否会在下一次调用时继续重复这个警告消息。
 
-关于警告的更多细节请参见[warn](#)。
+关于警告的更多细节请参见[warn](#warn-msg1)。
 
 ### lua_Writer
 <pre>typedef int (*lua_Writer) (lua_State *L,
@@ -2026,7 +2026,7 @@ userdata 在Lua中表示一个C值。一个 *light userdata* 表示一个 *void 
 
 当协程被再次唤醒，Lua会调用给出的延续函数 k 以在C函数中让出后继续执行（参见[4.5](#45---在c代码中处理让出)）。这个延续函数会接收和之前的函数相同的栈，并将 n 个结果替换传递给 [lua_resume](#lua_resume)。此外，延续函数还会接收由[lua_yieldk](#lua_yieldk)传递的值 ctx 。
 
-通常这个函数不会返回；当协程最终被恢复时，它会继续执行延续函数。然而有一种特殊情况：当其在行内或计数 hook 中被调用时（参见[4.7](#)）。在这种情况下，[lua_yieldk](#lua_yieldk)应当不使用延续函数（索性使用[lua_yield](#lua_yield)）且无结果返回，hook 也应当在此函数调用后立刻返回。Lua会让出，并当其再次唤醒时将继续执行并触发  hook 的函数。
+通常这个函数不会返回；当协程最终被恢复时，它会继续执行延续函数。然而有一种特殊情况：当其在行内或计数 hook 中被调用时（参见[4.7](#47---调试接口)）。在这种情况下，[lua_yieldk](#lua_yieldk)应当不使用延续函数（索性使用[lua_yield](#lua_yield)）且无结果返回，hook 也应当在此函数调用后立刻返回。Lua会让出，并当其再次唤醒时将继续执行并触发  hook 的函数。
 
 当其由一个Lua线程中的一个挂起的C调用且没有延续函数时（被称为C调用边界），此函数可能会抛出错误，或者在一个无法在运行时挂起的Lua线程中调用时（通常是Lua主线程）。
 
@@ -2283,7 +2283,7 @@ luaL_check* 形式的函数总会在不满足检查时抛出错误。
                     int arg,
                     const char *extramsg);</pre>
 
-检查 cond 是否为真。如果不是，抛出一个关于第 arg 参数的带标准信息的错误（参见[luaL_argerror](#)）。
+检查 cond 是否为真。如果不是，抛出一个关于第 arg 参数的带标准信息的错误（参见[luaL_argerror](#lual_argerror)）。
 
 ### luaL_argerror
 <span style="color:gray;float:right;font-size:small;">[-0, +0, <em>v</em>]</span>
@@ -2301,7 +2301,7 @@ luaL_check* 形式的函数总会在不满足检查时抛出错误。
                        int arg,
                        const char *tname);</pre>
 
-检查 cond 是否为真。如果不是，抛出一个关于第 arg 参数的类型的带标准信息的错误（参见[luaL_typeerror](#)）。
+检查 cond 是否为真。如果不是，抛出一个关于第 arg 参数的类型的带标准信息的错误（参见[luaL_typeerror](#lual_typeerror)）。
 
 ### luaL_Buffer
 ```C
@@ -2324,7 +2324,7 @@ typedef struct luaL_Buffer luaL_Buffer;
 * 再和之前一样在分配的空间里构建字符串。
 * 最后调用 luaL_pushresultsize(&b, sz) ，其中 sz 是在缓冲区空间中的最终字符串的长度（其实可能会小于或等于之前分配的大小）。
 
-一般在以上的操作过程中，字符串缓冲区会使用到不定数目的栈空间。所以当使用缓冲区时，你不可以假设栈顶是已知的。你可以在连续的缓冲区操作之间使用栈，只要能够平衡地去使用它；意思是，当你调用一个缓冲区操作时，栈的层级和上次缓冲区操作后的相同。（这个规则的唯一例外是[luaL_addvalue](#lual_addvalue)。）在调用[luaL_pushresult](#)后，栈应该回到缓冲区初始化的状态，然后将最终的字符串加到栈顶上。
+一般在以上的操作过程中，字符串缓冲区会使用到不定数目的栈空间。所以当使用缓冲区时，你不可以假设栈顶是已知的。你可以在连续的缓冲区操作之间使用栈，只要能够平衡地去使用它；意思是，当你调用一个缓冲区操作时，栈的层级和上次缓冲区操作后的相同。（这个规则的唯一例外是[luaL_addvalue](#lual_addvalue)。）在调用[luaL_pushresult](#lual_pushresult)后，栈应该回到缓冲区初始化的状态，然后将最终的字符串加到栈顶上。
 
 ### luaL_buffaddr
 <span style="color:gray;float:right;font-size:small;">[-0, +0, <em>-</em>]</span>
@@ -2348,7 +2348,7 @@ typedef struct luaL_Buffer luaL_Buffer;
 <span style="color:gray;float:right;font-size:small;">[-?, +?, <em>m</em>]</span>
 <pre>char *luaL_buffinitsize (lua_State *L, luaL_Buffer *B, size_t sz);</pre>
 
-等效于先后调用[luaL_buffinit](#lual_buffinit)、[luaL_prepbuffsize](#)。
+等效于先后调用[luaL_buffinit](#lual_buffinit)、[luaL_prepbuffsize](#lual_prepbuffsize)。
 
 ### luaL_buffsub
 <span style="color:gray;float:right;font-size:small;">[-?, +?, <em>-</em>]</span>
@@ -2427,7 +2427,7 @@ typedef struct luaL_Buffer luaL_Buffer;
 <span style="color:gray;float:right;font-size:small;">[-0, +0, <em>v</em>]</span>
 <pre>void *luaL_checkudata (lua_State *L, int arg, const char *tname);</pre>
 
-检查函数的第 arg 个参数类型是否为类型名为 tname 的 userdata（参见[luaL_newmetatable](#)）并返回其内存块的地址（参见[lua_touserdata](#)）。
+检查函数的第 arg 个参数类型是否为类型名为 tname 的 userdata（参见[luaL_newmetatable](#lual_newmetatable)）并返回其内存块的地址（参见[lua_touserdata](#lua_touserdata)）。
 
 ### luaL_checkversion
 <span style="color:gray;float:right;font-size:small;">[-0, +0, <em>v</em>]</span>
@@ -2648,7 +2648,7 @@ l 必须传入数组本身，而不是一个指针。
 <span style="color:gray;float:right;font-size:small;">[-?, +?, <em>m</em>]</span>
 <pre>char *luaL_prepbuffer (luaL_Buffer *B);</pre>
 
-等效于使用预定义的 LUAL_BUFFERSIZE 调用[luaL_prepbuffsize](#)。
+等效于使用预定义的 LUAL_BUFFERSIZE 调用[luaL_prepbuffsize](#lual_prepbuffsize)。
 
 ### luaL_prepbuffsize
 <span style="color:gray;float:right;font-size:small;">[-?, +?, <em>m</em>]</span>
@@ -2660,7 +2660,7 @@ l 必须传入数组本身，而不是一个指针。
 <span style="color:gray;float:right;font-size:small;">[-0, +1, <em>-</em>]</span>
 <pre>void luaL_pushfail (lua_State *L);</pre>
 
-将**fail**值压入栈中（参见[6](#)）。
+将**fail**值压入栈中（参见[6](#6---标准库)）。
 
 ### luaL_pushresult
 <span style="color:gray;float:right;font-size:small;">[-?, +1, <em>m</em>]</span>
@@ -2690,14 +2690,14 @@ l 必须传入数组本身，而不是一个指针。
   lua_CFunction func;
 } luaL_Reg;</pre>
 
-用于[luaL_setfuncs](#)的注册函数的数组的元素类型。字段 name 是函数的名称，func 是对应的函数指针。任何[luaL_Reg](#lual_reg)数组都必须以一个name 和 func 字段都是NULL的哨兵条目结尾。
+用于[luaL_setfuncs](#lual_setfuncs)的注册函数的数组的元素类型。字段 name 是函数的名称，func 是对应的函数指针。任何[luaL_Reg](#lual_reg)数组都必须以一个name 和 func 字段都是NULL的哨兵条目结尾。
 
 ### luaL_requiref
 <span style="color:gray;float:right;font-size:small;">[-0, +1, <em>e</em>]</span>
 <pre>void luaL_requiref (lua_State *L, const char *modname,
                     lua_CFunction openf, int glb);</pre>
 
-如果 package.loaded\[modname\] 结果不为 true 时，会使用字符串 modname 作为函数 openf 的参数传入并调用，并将调用结果放到 package.loaded\[modname\] 中，就好像这个函数由[require](#)调用的一样。
+如果 package.loaded\[modname\] 结果不为 true 时，会使用字符串 modname 作为函数 openf 的参数传入并调用，并将调用结果放到 package.loaded\[modname\] 中，就好像这个函数由[require](#require-modname)调用的一样。
 
 如果参数 glb 为true，则将导入的模块也存到与 modname 同名的全局变量中。
 
@@ -2786,16 +2786,16 @@ typedef struct luaL_Stream {
 此函数一般用于构建错误信息的前缀。
 
 # 6 - 标准库
-Lua标准标准库提供了一些有用的函数，这些函数是通过 C API 实现在C代码中的。其中有些函数为语言提供了基础服务（如[type](#)和[getmetatable](#)）；有些函数提供了外部服务（例如 I/O 相关）；有些函数其实也可以Lua代码中实现，但是因为各种原因其更适合在C中实现（例如[table.sort](#)）。
+Lua标准标准库提供了一些有用的函数，这些函数是通过 C API 实现在C代码中的。其中有些函数为语言提供了基础服务（如[type](#type-v)和[getmetatable](#getmetatable-object)）；有些函数提供了外部服务（例如 I/O 相关）；有些函数其实也可以Lua代码中实现，但是因为各种原因其更适合在C中实现（例如[table.sort](#)）。
 
 所有的库函数都是通过Lua官方的 C API 实现的，并以独立的 C 模块形式提供。一般情况下，库中的函数是不会将参数的数量调整到其预期的参数列表的。在文档中形如 foo(arg) 的函数在使用的时候就不应当缺省参数。
 
 符号**fail**的意为一个表示某种错误的假值。（目前**fail**还是等于**nil**，但是在未来版本中可能发生变更。推荐在判断它时使用 (not status) 的形式而不是 (status == nil) 。）
 
 到目前为止，Lua中有这些标准库：
-* 基础库（参见[6.1](#)）；
-* 协程库（参见[6.2](#)）；
-* 包（参见[6.3](#)）；
+* 基础库（参见[6.1](#61---基础库)）；
+* 协程库（参见[6.2](#62---处理协程)）；
+* 包（参见[6.3](#63-–-模块)）；
 * 字符串操作库（参见[6.4](#)）；
 * 基本的 UTF-8 支持（参见[6.5](#)）；
 * 表操作库（参见[6.6](#)）；
@@ -2892,7 +2892,7 @@ for k,v in pairs(t) do body end
 在*保护模式*下使用给出的参数列表来调用函数 f 。意思是 f 中的任何错误都不会传播开；而是会由 pcall 捕获错误并返回状态码。其第一个返回值是一个状态码（布尔类型），没有错误则为**true**。这种情况下，pcall 会将所有的调用结果也放在第一个返回值后一并返回。在发生错误的情况下，pcall 会返回**false**加上错误对象。注意捕获的错误不会触发错误处理。
 
 ### print (···)
-接收任意数量的参数并将其输出到标准输出 stdout 中，其中会将每个参数转换为字符串，转换规则同[tostring](#)。
+接收任意数量的参数并将其输出到标准输出 stdout 中，其中会将每个参数转换为字符串，转换规则同[tostring](#tostring-v)。
 
 print 函数不适用于格式化输出，而是一个展示值的快捷方法，例如在调试的时候使用。如需完全控制输出的内容，请使用[string.format](#)和[io.write](#)。
 
@@ -2982,14 +2982,14 @@ print 函数不适用于格式化输出，而是一个展示值的快捷方法�
 
 
 ## 6.3 – 模块
-包相关库提供了Lua中加载模块相关的基础工具。其直接将一个函数[require](#)导出到了全局环境中，其他都导出到了表 package 中。
+包相关库提供了Lua中加载模块相关的基础工具。其直接将一个函数[require](#require-modname)导出到了全局环境中，其他都导出到了表 package 中。
 
 ### require (modname)
-加载给定的模块。此函数一开始会在表[package.loaded](#)中确认名为参数 modname 模块是否已经加载。如果是，那么 require 会返回存在 package.loaded\[modname\] 中的值。（这种情况下是没有第二个返回值的，以表示此次调用没有加载任何模块。）否则将尝试查找模块的*加载器 loader* 。
+加载给定的模块。此函数一开始会在表[package.loaded](#packageloaded)中确认名为参数 modname 模块是否已经加载。如果是，那么 require 会返回存在 package.loaded\[modname\] 中的值。（这种情况下是没有第二个返回值的，以表示此次调用没有加载任何模块。）否则将尝试查找模块的*加载器 loader* 。
 
-[package.searchers](#)会引导查找加载器。该表中的每一个元素都是一个查找函数，通过其各自的方式查找模块。所以通过改变该表我们就可以改变 require 查找模块的方式。下边解释了默认配置下的 package.searchers 。
+[package.searchers](#packagesearchers)会引导查找加载器。该表中的每一个元素都是一个查找函数，通过其各自的方式查找模块。所以通过改变该表我们就可以改变 require 查找模块的方式。下边解释了默认配置下的 package.searchers 。
 
-首先 require 会查询 package.preload\[modname\]。如果找到了，那么其对应的值（一定是个函数）就是加载器。否则 require 会使用另一个加载器，这个加载器使用存在 [package.path](#) 的路径查找模块。如果又失败了，则会使用一个C加载器，其会在 [package.cpath](#) 中寻找。如果还是失败了，则会尝试使用 *all-in-one* 加载器（参见[package.searchers](#packagesearchers)）。
+首先 require 会查询 package.preload\[modname\]。如果找到了，那么其对应的值（一定是个函数）就是加载器。否则 require 会使用另一个加载器，这个加载器使用存在 [package.path](#packagepath) 的路径查找模块。如果又失败了，则会使用一个C加载器，其会在 [package.cpath](#packagecpath) 中寻找。如果还是失败了，则会尝试使用 *all-in-one* 加载器（参见[package.searchers](#packagesearchers)）。
 
 对于每个找到的加载器， require 都会使用两个参数调用它：modname 和一个扩展值（是一个 *加载器数据 loader data*，也是由查找器返回的） 。这个加载器数据是模块所用到的一个任意值；对于默认的查找器，它是加载器被查找到的位置。（例如，如果是一个来自文件中的加载器，这个值就是文件路径。）如果加载器返回了任何非空的值，require 会将其赋值给 package.loaded\[modname\] 。如果加载器没有返回有效值并没有任何 package.loaded\[modname\] 的赋值，那么 require 会将该条目置为*true*。任何情况下，require 都会返回 package.loaded\[modname\] 最终的值。除这个值以外，require 还会将查找器返回的加载器数据作为第二个结果返回，其表明了 require 是如何找到的模块。
 
