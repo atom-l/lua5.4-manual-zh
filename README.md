@@ -3815,3 +3815,111 @@ $ lua -e "print(arg[1])"
  #!/usr/bin/env lua
 ```
 是一种更通用的解决方式。
+
+
+# 8 - 版本兼容性相关
+我们在这里列出了从Lua 5.3迁移到Lua 5.4的过程中你可能会遇到的兼容性问题。
+
+你可以通过使用适当的选项来编译Lua以避免一些兼容性问题（参见 luaconf.h 文件）。然而，所有的这些兼容选项在将来都会被移除。通常情况下，这些选项被移除后就会出现兼容性问题了。所以在任何时候，你只要有机会，就应当尝试使用关闭了所有兼容选项编译某个版本的Lua中测试你的代码。这将会比较容易的迁移到新版本Lua。
+
+Lua版本变化时通常会改变 C API 的内部实现方式，例如修改其常量定义或者是宏方法的实现。因此，你永远不该假设二进制文件在两个不同的Lua版本中是兼容的。使用新的版本时通常应该重新编译 Lua API 的客户端程序。
+
+类似的，Lua版本变化会改动预编译代码块的内部表示；预编译代码块在不同的Lua版本中也是不兼容的。
+
+不同版本之间的官方发行版本中标准路径可能也会变化。
+
+## 8.1 - 语言中的兼容性问题
+* 算术运算和位运算中对字符串到数字的强制转换已经从语言核心特性中移除。对于算术运算（位运算没有）字符串库中可以使用字符串元函数来完成相似的任务。然而，与之前的版本不同，新版实现中保留了字符串中的隐式数字类型。例如，"1" + "2" 的结果是个整数，而不是浮点数。
+* 溢出的字面十进制整数常量会被作为浮点数读取，而不是做环绕。如果你想要产生之前的行为（环绕），你可以使用十六进制来表示这种常量。
+* 用 __lt 元方法来逼近 __le 的做法已经被溢出。需要用到该元函数时，该元函数必须显式地定义。
+* 数字形式的**for**循环的语义有一些变化。特别是控制变量不会再做环绕了。
+* 不可以在相同的可见范围内声明重名的**goto**标签，即时另一个标签是在封闭的语句块中声明的。
+* 终结某个对象的时候，Lua不会忽略 __gc 元函数并非时个函数的情况。任何值都将被调用，只要它存在。（和其他调用终结器时发生的错误一样，不可调用的值将会产生一个警告。）
+
+## 8.2 - 库中的兼容性问题
+* [print](#print)函数不会调用[tostring](#tostring-v)来格式化其参数，而是有硬实现的方法。你应当使用 __tostring 来改变某个值的打印方式。
+* [math.random](#mathrandom-m--n)中使用的伪随机数生成器现在会从一个有些随机的随机种子开始。此外，其使用了不同的算法。
+* 默认情况下，[utf8](#65---utf-8支持)库中的解码函数不在接受UTF-16中的代理项作为有效码点。如果需要宽松些的码点判断，可以使用相关函数的额外参数（lax）。
+* [collectgarbage](#collectgarbage-opt--arg)函数中的 "setpause" 和 "setstepmul" 选项已经被弃用。你应当使用新选项 "incremental" 来设置它们。
+* [io.lines](#iolines-filename)函数现在会返回四个值，而不是一个。将该函数的返回值作为另一个函数的唯一参数使用时会有问题，例如 load(io.lines(filename, "L")) 。为了修复这样的错误，你可以将其用括号括起来，以确保其只会传出一个结果。
+
+## 8.3 - API中的兼容性问题
+* full userdat 现在可以有任意数量的 user value 。因此，lua_newuserdata 、lua_setuservalue、以及 lua_getuservalue 函数都被替换为[lua_newuserdatauv](#lua_newuserdatauv)、[lua_setiuservalue](#lua_setiuservalue)、以及[lua_getiuservalue](#lua_getiuservalue)，这些函数都有额外参数。
+* [lua_resume](#lua_resume)函数有了额外参数。由协程所让出或返回的值可以作为若干个参数传入进去。
+* [lua_version](#lua_version)函数会返回版本数字，而不是版本数字的地址。Lua核心应该能够正确地与使用相同核心的静态副本的库一起工作，因此无需检查它们是否使用相同的地址空间。
+* 常量 LUA_ERRGCMM 被移除。在终结器中发生的错误永远不会传播，而是只会生成一个警告。
+* [lua_gc](#lua_gc)函数的 LUA_GCSETPAUSE 和 LUA_GCSETSTEPMUL 选项被弃用了。你应该使用新选项 LUA_GCINC 来设置它们。
+
+
+# 9 - Lua完整语法
+以下是用BNF扩展形式来展示的Lua完整语法。和常见的BNF扩展形式一样，{A} 意为0个或多个A、\[A\]意为一个可选的A。（关于运算符优先级，请参见[3.4.8](#348---优先级)；关于名称、数字、以及字面量字符串的描述，请参见[3.1](#31---词法约定)。）
+
+<pre>
+chunk ::= block
+
+block ::= {stat} [retstat]
+
+stat ::=  ‘<b>;</b>’ | 
+	 varlist ‘<b>=</b>’ explist | 
+	 functioncall | 
+	 label | 
+	 <b>break</b> | 
+	 <b>goto</b> Name | 
+	 <b>do</b> block <b>end</b> | 
+	 <b>while</b> exp <b>do</b> block <b>end</b> | 
+	 <b>repeat</b> block <b>until</b> exp | 
+	 <b>if</b> exp <b>then</b> block {<b>elseif</b> exp <b>then</b> block} [<b>else</b> block] <b>end</b> | 
+	 <b>for</b> Name ‘<b>=</b>’ exp ‘<b>,</b>’ exp [‘<b>,</b>’ exp] <b>do</b> block <b>end</b> | 
+	 <b>for</b> namelist <b>in</b> explist <b>do</b> block <b>end</b> | 
+	 <b>function</b> funcname funcbody | 
+	 <b>local</b> <b>function</b> Name funcbody | 
+	 <b>local</b> attnamelist [‘<b>=</b>’ explist] 
+
+attnamelist ::=  Name attrib {‘<b>,</b>’ Name attrib}
+
+attrib ::= [‘<b>&lt;</b>’ Name ‘<b>&gt;</b>’]
+
+retstat ::= <b>return</b> [explist] [‘<b>;</b>’]
+
+label ::= ‘<b>::</b>’ Name ‘<b>::</b>’
+
+funcname ::= Name {‘<b>.</b>’ Name} [‘<b>:</b>’ Name]
+
+varlist ::= var {‘<b>,</b>’ var}
+
+var ::=  Name | prefixexp ‘<b>[</b>’ exp ‘<b>]</b>’ | prefixexp ‘<b>.</b>’ Name 
+
+namelist ::= Name {‘<b>,</b>’ Name}
+
+explist ::= exp {‘<b>,</b>’ exp}
+
+exp ::=  <b>nil</b> | <b>false</b> | <b>true</b> | Numeral | LiteralString | ‘<b>...</b>’ | functiondef | 
+	 prefixexp | tableconstructor | exp binop exp | unop exp 
+
+prefixexp ::= var | functioncall | ‘<b>(</b>’ exp ‘<b>)</b>’
+
+functioncall ::=  prefixexp args | prefixexp ‘<b>:</b>’ Name args 
+
+args ::=  ‘<b>(</b>’ [explist] ‘<b>)</b>’ | tableconstructor | LiteralString 
+
+functiondef ::= <b>function</b> funcbody
+
+funcbody ::= ‘<b>(</b>’ [parlist] ‘<b>)</b>’ block <b>end</b>
+
+parlist ::= namelist [‘<b>,</b>’ ‘<b>...</b>’] | ‘<b>...</b>’
+
+tableconstructor ::= ‘<b>{</b>’ [fieldlist] ‘<b>}</b>’
+
+fieldlist ::= field {fieldsep field} [fieldsep]
+
+field ::= ‘<b>[</b>’ exp ‘<b>]</b>’ ‘<b>=</b>’ exp | Name ‘<b>=</b>’ exp | exp
+
+fieldsep ::= ‘<b>,</b>’ | ‘<b>;</b>’
+
+binop ::=  ‘<b>+</b>’ | ‘<b>-</b>’ | ‘<b>*</b>’ | ‘<b>/</b>’ | ‘<b>//</b>’ | ‘<b>^</b>’ | ‘<b>%</b>’ | 
+	 ‘<b>&amp;</b>’ | ‘<b>~</b>’ | ‘<b>|</b>’ | ‘<b>&gt;&gt;</b>’ | ‘<b>&lt;&lt;</b>’ | ‘<b>..</b>’ | 
+	 ‘<b>&lt;</b>’ | ‘<b>&lt;=</b>’ | ‘<b>&gt;</b>’ | ‘<b>&gt;=</b>’ | ‘<b>==</b>’ | ‘<b>~=</b>’ | 
+	 <b>and</b> | <b>or</b>
+
+unop ::= ‘<b>-</b>’ | <b>not</b> | ‘<b>#</b>’ | ‘<b>~</b>’
+</pre>
