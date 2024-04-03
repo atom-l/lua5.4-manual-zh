@@ -1034,7 +1034,7 @@ int original_function (lua_State *L) {
 Lua将延续函数和源函数作相同看待。延续函数同样接收来自源函数的Lua栈，如果callee函数已经返回了，那么还是在相同的Lua状态机内。（例如，在[lua_callk](#lua_callk)之后，函数和其参数都从栈上移除了，取而代之的是调用结果。）其拥有同样的上值。无论如何，此返回都会被Lua作和源函数返回一样的处理。
 
 ## 4.6 - 相关函数及类型
-<p>在这里我们列出了C API中所有的函数和类型，其按照字母顺序排列。每个函数都有一个像这样的标注：<span style="color:gray;float:right;font-size:small;">[-o, +p, <em>x</em>]</span>
+在这里我们列出了C API中所有的函数和类型，其按照字母顺序排列。每个函数都有一个像这样的标注：<span style="color:gray;float:right;font-size:small;">[-o, +p, <em>x</em>]</span>
 
 其中第一个属性o表示这个函数会从栈上弹出多少个元素。第二个属性p表示这个函数会把多少个元素压入栈。（任何函数都会在弹出其参数后再把其结果压入栈中。）x|y的形式的属性表示会压入（弹出）x个或者y个元素；其依情况为定；一个问号?表示不知道这个函数会压入（弹出）多少个元素，这取决于它们的参数。（例如依赖了栈内的什么值。）第三个属性x会告知这个函数有没有可能抛出错误：'-'意味着函数不会抛出任何错误；'m'意味着可能会抛出内存溢出的错误；'v'意味着这个函数可能会抛出在下文中解释的错误；'e'意味着这个函数可以运行任意Lua代码，无论是直接执行还是通过调用元函数，因此可能会抛出任何错误。
 
@@ -1102,7 +1102,7 @@ static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize) {
 <span style="color:gray;float:right;font-size:small;">[-0, +0, <em>e</em>]</span>
 <pre>lua_CFunction lua_atpanic (lua_State *L, lua_CFunction panicf);</pre>
 
-返回旧的并设置新的panic函数
+返回旧的并设置新的panic函数。
 
 ### lua_call
 <span style="color:gray;float:right;font-size:small;">[-(nargs+1), +nresults, <em>e</em>]</span>
