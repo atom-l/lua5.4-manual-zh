@@ -162,5 +162,5 @@ export default defineConfig({
       provider: 'local'
     }
   },
-  outDir: './pages'
+  outDir: '../docs'
 })
