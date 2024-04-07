@@ -159,7 +159,10 @@ export default defineConfig({
     logo: '/lua.ico',
 
     search: {
-      provider: 'local'
+      provider: 'local',
+      options: {
+        detailedView: true
+      }
     }
   },
   outDir: '../docs',
