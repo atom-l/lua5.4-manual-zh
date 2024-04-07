@@ -161,5 +161,6 @@ export default defineConfig({
     search: {
       provider: 'local'
     }
-  }
+  },
+  outDir: './pages'
 })
