@@ -1462,7 +1462,7 @@ Lua还定义了常量 LUA_MININTEGER 和 LUA_MAXINTEGER，用于表示此类型�
 
 [lua_load](#lua_load)内部也使用了栈，所以reader函数在返回是必须使得栈保持不变。
 
-[lua_load](#lua_load)可能返回  LUA_OK、 LUA_ERRSYNTAX 或是 LUA_ERRMEM （。此函数也可能返回与read函数所产生错误相关的值。参见[4.4.4](#441---状态码)）
+[lua_load](#lua_load)可能返回  LUA_OK、 LUA_ERRSYNTAX 或是 LUA_ERRMEM （。此函数也可能返回与read函数所产生错误相关的值。参见[4.4.1](#441---状态码)）
 
 如果加载得到的函数有上值，那么第一个上值就会设在全局环境中的值中，全局环境被存在注册表中的  LUA_RIDX_GLOBALS 索引处（参见[4.3](#43---注册表)）。加载主代码块时，这个上值会是变量 _ENV（参见[2.2](#22---环境和全局环境)）。其他上值会被初始化为**nil**。
 
@@ -1628,7 +1628,7 @@ userdata 在Lua中表示一个C值。一个 *light userdata* 表示一个 *void 
 
 将一个指向长度为 len 的字符串的指针 s 压入到栈中。Lua将新建或重用所给字符串的拷贝，所以 s 所指向的内存可以在函数返回后立刻释放或者继续复用。这个字符串可以包含任何二进制数据，包括嵌入的零值。
 
-返回一个指向此字符串的内部拷贝的指针（参见[4.13](#413---字符串指针)）。
+返回一个指向此字符串的内部拷贝的指针（参见[4.1.3](#413---字符串指针)）。
 
 ### lua_pushnil
 <span style="color:gray;float:right;font-size:small;">[-0, +1, <em>-</em>]</span>
